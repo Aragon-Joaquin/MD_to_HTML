@@ -25,53 +25,55 @@ _SPANISH ALERT ❗❗❗❗_
    ]
    ```
 
-| **Token Type** | **Elements**                                                              |
-| -------------- | ------------------------------------------------------------------------- |
-| Symbol         | `*`, `_`, `$`, `=`, ` `` `, `~`, `#`, `>`, `-`, `[ and ]`, `( and )`, `!` |
-| String         | Words, phrases, or plain text                                             |
+Por ahora, solo me ocupare de los elementos mas basicos de Markdown. Quizas en un futuro cubra los de la lista extendida.
 
-2. **_Parser_**
+| **Token Type** | **Elements**                                                                  |
+| -------------- | ----------------------------------------------------------------------------- |
+| Symbol         | `*`, `_`, `$`, `=`, ` `` `, `~`, `#`, `>`, `-`, `[ and ]`, `( and )`, `!`     |
+| String         | Words, phrases, or plain text                                                 |
+| NewLine        | Only line feed values like `\n`, `\r` or `\r\n`. Whitespaces will be skipped. |
+| Comments       | Dont apply rules to the following blocks: `/* */` and `<!-- -->`              |
 
-   Es aqui donde se define el AST (_Abstract Syntax Tree_ ). Aqui es donde los tokens se van a transformar en nodos.
-   Como ya explique anteriormente, el AST va resultar bastante breve donde los parents nodes simplemente serán los **Symbols**.
-   He aqui un ejemplo de lo que tengo en mente:
+1. **_Parser_**
 
-   ```js
-   const parsed = [
-   	{
-   		type: 'Symbol',
-   		value: '**',
-   		repeatsAtTheEnd: true,
-   		body: [
-   			{
-   				type: 'String',
-   				value: 'Bold',
-   				repeatsAtTheEnd: false,
-   				body: []
-   			},
-   			{
-   				type: 'String',
-   				value: 'text',
-   				repeatsAtTheEnd: false,
-   				body: []
-   			}
-   		]
-   	},
-   	// and if we would have another token...
-   	{
-   		type: 'String',
-   		value: 'hello',
-   		repeatsAtTheEnd: false,
-   		body: []
-   	}
-   ]
-   ```
+<!-- asd -->
+
+Es aqui donde se define el AST (_Abstract Syntax Tree_ ). Aqui es donde los tokens se van a transformar en nodos.
+Como ya explique anteriormente, el AST va resultar bastante breve donde los parents nodes simplemente serán los **Symbols**.
+He aqui un ejemplo de lo que tengo en mente:
+
+```js
+const parsed = [
+	{
+		type: 'Symbol',
+		value: '**',
+		body: [
+			{
+				type: 'String',
+				value: 'Bold',
+				body: []
+			},
+			{
+				type: 'String',
+				value: 'text',
+				body: []
+			}
+		]
+	},
+	// and if we would have another token...
+	{
+		type: 'String',
+		value: 'hello',
+		body: []
+	}
+]
+```
 
 3. **_Traverser_ (not common on most compilers)**
 
    La idea de este punto era simplemente realizar un hashmap de funciones abstractas e injectarlas al nodo simplemente para agilizar el recorrido de sus hijos haciendolo recursivamente, no creo implementarlo.
 
-4. **_Transformer_**
+4. **_Transformer_ (or Intermediate Code Generation)**
 
    Para este ejemplo, el transformer no tiene mucho sentido emplearlo ya que se suele hacer optimizaciones y añadir mas informacion tecnica de la syntaxis. Pero aun asi lo utilizaremos para designar el tipo de expresion que es, y cual es la etiqueta HTML que le pertenece.
 
