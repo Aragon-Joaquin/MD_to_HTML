@@ -44,7 +44,6 @@ func TokenaizeAllLines(fileBytes []byte) []Token {
 			continue
 		}
 
-		//! i can improve this
 		var word string
 		for {
 			char := string(fileBytes[cursor])

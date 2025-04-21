@@ -73,10 +73,13 @@ const parsed = [
 
    La idea de este punto era simplemente realizar un hashmap de funciones abstractas e injectarlas al nodo simplemente para agilizar el recorrido de sus hijos haciendolo recursivamente, no creo implementarlo.
 
+   > update:
+   > Al final he utilizado punteros hacia los nodos padres en el Parser. He hecho 2 pasos en una funcion.
+
 4. **_Transformer_ (or Intermediate Code Generation)**
 
    Para este ejemplo, el transformer no tiene mucho sentido emplearlo ya que se suele hacer optimizaciones y añadir mas informacion tecnica de la syntaxis. Pero aun asi lo utilizaremos para designar el tipo de expresion que es, y cual es la etiqueta HTML que le pertenece.
 
 5. **_HTML Output_**
 
-   .
+   Solamente voy a exportar el html al mismo directorio que este projecto.
