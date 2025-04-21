@@ -23,7 +23,7 @@ func TokenaizeAllLines(fileBytes []byte) []Token {
 			continue
 		}
 
-		if u.Symbols[char] > 0 {
+		if slices.Contains(u.TypeOfSymbols, char) {
 			sliceOfTokens = append(sliceOfTokens, Token{
 				Type:  "Symbol",
 				Value: char,

@@ -8,7 +8,7 @@ import (
 var lineSeparators = []string{"\r", "\n"}
 
 func isString(char string) bool {
-	if u.Symbols[char] > 0 {
+	if slices.Contains(u.TypeOfSymbols, char) {
 		return false
 	}
 
