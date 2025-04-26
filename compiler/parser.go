@@ -1,10 +1,8 @@
 package compiler
 
 import (
-	"fmt"
 	u "md_to_html/utils"
 	"slices"
-	"strings"
 )
 
 type ASTNode struct {
@@ -41,45 +39,54 @@ func ParseToAST(tokens []Token) *[]ASTNode {
 			var fullSymbol string
 			alternatives := checkAllPosibilities(getSymbol.Pattern)
 
-			//! still working on this
+			// groups symbols like:
+			// #####, _, <!--, etc...
 			for idx, val := range alternatives {
-				cuToken := tokens[cursor]
-				cursor++
-
-				fmt.Println(string(fullSymbol + cuToken.Value))
-				if slices.Contains(getSymbol.Pattern, string(fullSymbol+cuToken.Value)) {
-					fullSymbol += cuToken.Value
-				} else {
-					break
-				}
-			}
-
-			fmt.Printf("fullSymbol: %v\n", fullSymbol)
-
-			if parent == nil {
-				node := createEmptyNode(cuToken, parent)
-				finalTree = append(finalTree, node)
-				return recursiveToken(&node, finalTree)
-			} else {
-				matchValue := strings.Split(parent.Value, "")
-				var patternMatch string
-
-				for idx := range matchValue {
+				for range len(val) {
 					cuToken := tokens[cursor]
 					cursor++
 
-					if matchValue[idx] == cuToken.Value {
-						patternMatch += cuToken.Value
-						continue
+					//fmt.Println(string(fullSymbol + cuToken.Value))
+
+					if slices.Contains(val, string(cuToken.Value)) {
+						val = val[idx:]
+						fullSymbol += cuToken.Value
 					} else {
 						break
 					}
 				}
 
-				if patternMatch == parent.Value {
-					return recursiveToken(parent.ParentNode, finalTree)
+				if slices.Contains(getSymbol.Pattern, fullSymbol) {
+					break
+				}
+
+			}
+
+			//opens a body for the symbol node
+			if parent == nil {
+				node := ASTNode{
+					ParentNode: parent,
+					Type:       isCommentType(fullSymbol),
+					Value:      fullSymbol,
+					Body:       &[]ASTNode{},
+				}
+				finalTree = append(finalTree, node)
+				return recursiveToken(&node, finalTree)
+			} else {
+				// else, it closes it
+
+				//fmt.Println("asd", string(parent.Value[0]))
+				parentPattern := u.Symbols[string(parent.Value[0])]
+
+				if slices.Contains(parentPattern.Pattern, fullSymbol) {
+					return recursiveToken(parentHasParent(parent), finalTree)
 				} else {
-					node := createEmptyNode(cuToken, parent)
+					node := ASTNode{
+						ParentNode: parent,
+						Type:       isCommentType(fullSymbol),
+						Value:      fullSymbol,
+						Body:       &[]ASTNode{},
+					}
 					*parent.Body = append(*parent.Body, node)
 					return recursiveToken(parent, finalTree)
 				}
@@ -90,7 +97,7 @@ func ParseToAST(tokens []Token) *[]ASTNode {
 
 		if cuToken.Type == "NewLine" {
 			finalTree = append(finalTree, createEmptyNode(cuToken, parent))
-			return recursiveToken(nil, finalTree)
+			return recursiveToken(parentHasParent(parent), finalTree)
 		}
 
 		return finalTree
@@ -98,30 +105,4 @@ func ParseToAST(tokens []Token) *[]ASTNode {
 
 	ASTree := recursiveToken(nil, []ASTNode{})
 	return &ASTree
-}
-
-func createEmptyNode(cuToken Token, parent *ASTNode) ASTNode {
-	return ASTNode{
-		ParentNode: parent,
-		Type:       cuToken.Type,
-		Value:      cuToken.Value,
-		Body:       &[]ASTNode{},
-	}
-}
-
-/*
-! "why does this function even exists?"
-
-Some characters like "<" have a pattern which contains multiples characters.
-And some have more than one pattern.
-*/
-func checkAllPosibilities(pattern []string) [][]string {
-	var alternatives [][]string
-
-	for idx := range pattern {
-		test := strings.Split(pattern[idx], "")
-		alternatives = append(alternatives, test)
-	}
-
-	return alternatives
 }

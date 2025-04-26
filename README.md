@@ -32,7 +32,7 @@ Por ahora, solo me ocupare de los elementos mas basicos de Markdown. Quizas en u
 | Symbol         | `*`, `_`, `$`, `=`, ` `` `, `~`, `#`, `>`, `-`, `[ and ]`, `( and )`, `!`     |
 | String         | Words, phrases, or plain text                                                 |
 | NewLine        | Only line feed values like `\n`, `\r` or `\r\n`. Whitespaces will be skipped. |
-| Comments       | Dont apply rules to the following blocks: `/* */` and `<!-- -->`              |
+| Comment        | Dont apply rules to the following blocks: `/* */` and `<!-- -->`              |
 
 1. **_Parser_**
 

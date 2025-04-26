@@ -2,7 +2,6 @@ package utils
 
 type TypeOfData struct {
 	Pattern []string
-	// doesRepeat bool
 }
 
 var TypeOfSymbols = []string{"*", "_", "$", "=", "`",
@@ -11,23 +10,32 @@ var TypeOfSymbols = []string{"*", "_", "$", "=", "`",
 	"/", "<", "!"}
 
 var Symbols = map[string]TypeOfData{
-	"*": {Pattern: []string{"*", "**", "***", "*/"}},
-	"_": {Pattern: []string{"_", "__"}},
+
+	//get closes by the same pattern
+	"*": {Pattern: []string{"*/", "***", "**", "*"}},
+	"_": {Pattern: []string{"__", "_"}},
 	"$": {Pattern: []string{"$"}},
 	"=": {Pattern: []string{"=="}},
-	"`": {Pattern: []string{"`", "```"}},
+	"`": {Pattern: []string{"```", "`"}},
 	"~": {Pattern: []string{"~~"}},
-	"#": {Pattern: []string{"#", "##", "###", "####", "#####", "######"}},
+	"#": {Pattern: []string{"######", "#####", "####", "###", "##", "#"}},
 
-	// complex symbols
+	// wont repeat at the end
 	">": {Pattern: []string{">"}},
-	"-": {Pattern: []string{"-", "---", "-->"}},
+	"-": {Pattern: []string{"-->", "---", "-"}},
 	"[": {Pattern: []string{"["}},
 	"]": {Pattern: []string{"]"}},
 	"(": {Pattern: []string{"("}},
 	")": {Pattern: []string{")"}},
 	"/": {Pattern: []string{"/*"}},
 	"<": {Pattern: []string{"<!--"}},
+}
+
+var ClosesBy = map[string]string{
+	"/*":   "*/",
+	"<!--": "-->",
+	"(":    ")",
+	"[":    "]",
 }
 
 var CommentCombined = map[string]int{

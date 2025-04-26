@@ -25,7 +25,6 @@ func main() {
 	//! most important part of the program
 	dataInfo := u.GetPath(pathString)
 	tokens := c.TokenaizeAllLines(*dataInfo)
-	fmt.Printf("tokens: %v\n", tokens)
 	ASTree := c.ParseToAST(tokens)
 	c.TransformToHTMLCode(ASTree)
 }

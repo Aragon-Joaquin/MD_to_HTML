@@ -3,6 +3,7 @@ package compiler
 import (
 	u "md_to_html/utils"
 	"slices"
+	"strings"
 )
 
 var lineSeparators = []string{"\r", "\n"}
@@ -19,4 +20,56 @@ func isString(char string) bool {
 	}
 
 	return true
+}
+
+/*
+* ------------------------
+* 	PARSER FUNCTIONS
+* ------------------------
+ */
+
+func createEmptyNode(cuToken Token, parent *ASTNode) ASTNode {
+	return ASTNode{
+		ParentNode: parent,
+		Type:       cuToken.Type,
+		Value:      cuToken.Value,
+		Body:       &[]ASTNode{},
+	}
+}
+
+/*
+! "why does this function even exists?"
+
+Some characters like "<" have a pattern which contains multiples characters.
+And some have more than one pattern.
+*/
+func checkAllPosibilities(pattern []string) [][]string {
+	var alternatives [][]string
+
+	for idx := range pattern {
+		test := strings.Split(pattern[idx], "")
+		alternatives = append(alternatives, test)
+	}
+
+	return alternatives
+}
+
+func isCommentType(pattern string) string {
+	if u.CommentCombined[pattern] > 0 {
+		return "Comment"
+	}
+	return "Symbol"
+}
+
+func parentHasParent(node *ASTNode) *ASTNode {
+
+	if node == nil || node.ParentNode == nil {
+		return nil
+	}
+
+	if node.ParentNode.ParentNode == nil {
+		return nil
+	}
+
+	return node.ParentNode.ParentNode
 }
