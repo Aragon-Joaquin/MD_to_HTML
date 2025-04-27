@@ -73,3 +73,35 @@ func parentHasParent(node *ASTNode) *ASTNode {
 
 	return node.ParentNode.ParentNode
 }
+
+/*
+* ------------------------
+* 	TRANSFORMER FUNCTIONS
+* ------------------------
+ */
+
+func toggleHtmlSymbols(cursor *int, DOMElement []string, closeElements bool) string {
+	var bodyBuilder strings.Builder
+	for _, val := range DOMElement {
+		if closeElements {
+			bodyBuilder.WriteString("</" + val + ">")
+		} else {
+			bodyBuilder.WriteString("<" + val + ">")
+		}
+		bodyBuilder.WriteString("\n")
+		*cursor++
+	}
+	return bodyBuilder.String()
+}
+
+func closeHtmlComments(cursor *int, DOMElement string) string {
+	var bodyBuilder strings.Builder
+
+	commentType := u.ClosesBy[DOMElement]
+
+	bodyBuilder.WriteString(commentType)
+	bodyBuilder.WriteString("\n")
+	*cursor++
+
+	return bodyBuilder.String()
+}

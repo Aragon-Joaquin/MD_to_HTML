@@ -5,27 +5,51 @@ import (
 	"strings"
 )
 
-// ! probably i need to make this as a recursive function
-func TransformToHTMLCode(ASTree *[]ASTNode) {
-	var HTMLOutput string
+func TransformToHTMLCode(ASTree *[]ASTNode) *string {
+	var createHTMLElements func() strings.Builder
+	var bodyBuilder strings.Builder
+	var cursor int
 
-	for _, val := range *ASTree {
+	createHTMLElements = func() strings.Builder {
+		for cursor < len(*ASTree) {
+			node := (*ASTree)[cursor]
 
-		DOMElement := u.HTMLEquivalents[val.Value]
-		if len(DOMElement) > 0 {
-			var body strings.Builder
+			if node.Type == "Symbol" || node.Type == "Comment" {
+				var output strings.Builder
+				if node.Type == "Symbol" {
+					DOMElement := u.HTMLEquivalents[node.Value]
+					//process elements like <b>, <i>
+					bodyBuilder.WriteString(toggleHtmlSymbols(&cursor, DOMElement, false))
 
-			for _, val := range DOMElement {
-				body.WriteString("<" + val + ">")
+					for range *node.Body {
+						res := createHTMLElements()
+						output.WriteString(res.String())
+					}
+
+					bodyBuilder.WriteString(toggleHtmlSymbols(&cursor, DOMElement, true))
+
+				} else {
+					bodyBuilder.WriteString(node.Value)
+					cursor++
+
+					for range *node.Body {
+						res := createHTMLElements()
+						output.WriteString(res.String())
+					}
+
+					bodyBuilder.WriteString(closeHtmlComments(&cursor, node.Value))
+				}
+
+			} else {
+				bodyBuilder.WriteString(node.Value)
+				cursor++
 			}
-			body.WriteString("\n")
-
-			for range *val.Body {
-
-			}
-		} else {
-			HTMLOutput += val.Value
 		}
+
+		return bodyBuilder
 	}
 
+	createHTMLElements()
+	result := bodyBuilder.String()
+	return &result
 }

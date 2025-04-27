@@ -10,7 +10,7 @@ type Token struct {
 	Value string
 }
 
-func TokenaizeAllLines(fileBytes []byte) []Token {
+func TokenaizeAllLines(fileBytes []byte) *[]Token {
 
 	var sliceOfTokens []Token
 	var cursor int = 0
@@ -63,6 +63,6 @@ func TokenaizeAllLines(fileBytes []byte) []Token {
 		}
 	}
 
-	return sliceOfTokens
+	return &sliceOfTokens
 
 }

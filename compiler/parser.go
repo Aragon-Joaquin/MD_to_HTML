@@ -1,6 +1,7 @@
 package compiler
 
 import (
+	"fmt"
 	u "md_to_html/utils"
 	"slices"
 )
@@ -104,5 +105,6 @@ func ParseToAST(tokens []Token) *[]ASTNode {
 	}
 
 	ASTree := recursiveToken(nil, []ASTNode{})
+	fmt.Println(ASTree)
 	return &ASTree
 }
