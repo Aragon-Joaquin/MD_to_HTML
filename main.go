@@ -1,10 +1,8 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
-	"log"
 	c "md_to_html/compiler"
 	u "md_to_html/utils"
 	"os"
@@ -16,10 +14,10 @@ func main() {
 	flag.Parse()
 
 	//! validate/verification steps
-	if _, err := os.Stat(c.FilePath); !errors.Is(err, os.ErrNotExist) {
-		log.Fatalln("file already exists, delete it or move it to another directory")
-		return
-	}
+	// if _, err := os.Stat(c.FilePath); !errors.Is(err, os.ErrNotExist) {
+	// 	log.Fatalln("file already exists, delete it or move it to another directory")
+	// 	return
+	// }
 
 	var pathString string
 	if string(*cmd) == "" {
@@ -34,8 +32,8 @@ func main() {
 	dataInfo := u.GetPath(pathString)
 	tokens := c.TokenaizeAllLines(*dataInfo)
 	ASTree := c.ParseToAST(*tokens)
-	HTMLElements := c.TransformToHTMLCode(ASTree)
 
+	HTMLElements := c.TransformToHTMLCode(ASTree)
 	pathname, err := c.CreateOutput(*HTMLElements)
 	if err == nil {
 		fmt.Fprintln(os.Stdout, u.Green+"File saved in: "+pathname+u.Reset)

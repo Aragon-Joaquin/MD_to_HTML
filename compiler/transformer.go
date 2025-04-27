@@ -6,50 +6,59 @@ import (
 )
 
 func TransformToHTMLCode(ASTree *[]ASTNode) *string {
-	var createHTMLElements func() strings.Builder
 	var bodyBuilder strings.Builder
 	var cursor int
 
-	createHTMLElements = func() strings.Builder {
-		for cursor < len(*ASTree) {
-			node := (*ASTree)[cursor]
+	for cursor < len(*ASTree) {
+		node := (*ASTree)[cursor]
 
-			if node.Type == "Symbol" || node.Type == "Comment" {
-				var output strings.Builder
-				if node.Type == "Symbol" {
-					DOMElement := u.HTMLEquivalents[node.Value]
-					//process elements like <b>, <i>
-					bodyBuilder.WriteString(toggleHtmlSymbols(&cursor, DOMElement, false))
-
-					for range *node.Body {
-						res := createHTMLElements()
-						output.WriteString(res.String())
-					}
-
-					bodyBuilder.WriteString(toggleHtmlSymbols(&cursor, DOMElement, true))
-
-				} else {
-					bodyBuilder.WriteString(node.Value)
-					cursor++
-
-					for range *node.Body {
-						res := createHTMLElements()
-						output.WriteString(res.String())
-					}
-
-					bodyBuilder.WriteString(closeHtmlComments(&cursor, node.Value))
-				}
-
-			} else {
-				bodyBuilder.WriteString(node.Value)
-				cursor++
-			}
+		if node.Type == "Symbol" || node.Type == "Comment" {
+			var output strings.Builder
+			traverserNodeBody(&output, &cursor, &node, ASTree)
+			bodyBuilder.WriteString(output.String())
+		} else {
+			nextVal := getNextVal(ASTree, &cursor)
+			resString := identStrings(&cursor, &node, nextVal)
+			bodyBuilder.WriteString(resString)
+			cursor++
 		}
-
-		return bodyBuilder
 	}
 
-	createHTMLElements()
 	result := bodyBuilder.String()
 	return &result
+}
+
+// ! core
+func traverserNodeBody(output *strings.Builder, cursor *int, currentNode *ASTNode, ASTree *[]ASTNode) {
+	// fmt.Println("CURRENT NODE: ", currentNode)
+	if currentNode.Type == "Symbol" {
+		DOMElement := u.HTMLEquivalents[currentNode.Value]
+		output.WriteString(toggleHtmlSymbols(cursor, DOMElement, false))
+	} else {
+		// else, its a Comment
+		output.WriteString(currentNode.Value)
+		*cursor++
+	}
+
+	for idx, val := range *currentNode.Body {
+		if len(*val.Body) > 0 {
+			traverserNodeBody(output, cursor, &val, ASTree)
+
+		} else {
+			// its just a string or empty character
+			if val.Type != "Comment" {
+				nextVal := getNextVal(currentNode.Body, &idx)
+				res := identStrings(cursor, &val, nextVal)
+				output.WriteString(res)
+			}
+		}
+	}
+
+	if currentNode.Type == "Symbol" {
+		DOMElement := u.HTMLEquivalents[currentNode.Value]
+		output.WriteString(toggleHtmlSymbols(cursor, DOMElement, true))
+	} else {
+		output.WriteString(closeHtmlComments(cursor, currentNode.Value))
+
+	}
 }

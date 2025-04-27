@@ -30,7 +30,7 @@ func ParseToAST(tokens []Token) *[]ASTNode {
 			if parent != nil {
 				*parent.Body = append(*parent.Body, createEmptyNode(cuToken, parent))
 			} else {
-				finalTree = append(finalTree, createEmptyNode(cuToken, parent))
+				finalTree = append(finalTree, createEmptyNode(cuToken, nil))
 			}
 			return recursiveToken(parent, finalTree)
 		}
@@ -42,12 +42,11 @@ func ParseToAST(tokens []Token) *[]ASTNode {
 
 			// groups symbols like:
 			// #####, _, <!--, etc...
+			var counter int
 			for idx, val := range alternatives {
 				for range len(val) {
-					cuToken := tokens[cursor]
-					cursor++
-
-					//fmt.Println(string(fullSymbol + cuToken.Value))
+					cuToken := tokens[cursor+counter]
+					counter++
 
 					if slices.Contains(val, string(cuToken.Value)) {
 						val = val[idx:]
@@ -62,11 +61,12 @@ func ParseToAST(tokens []Token) *[]ASTNode {
 				}
 
 			}
+			cursor += len(fullSymbol) - 1
 
 			//opens a body for the symbol node
 			if parent == nil {
 				node := ASTNode{
-					ParentNode: parent,
+					ParentNode: nil,
 					Type:       isCommentType(fullSymbol),
 					Value:      fullSymbol,
 					Body:       &[]ASTNode{},
@@ -74,9 +74,8 @@ func ParseToAST(tokens []Token) *[]ASTNode {
 				finalTree = append(finalTree, node)
 				return recursiveToken(&node, finalTree)
 			} else {
-				// else, it closes it
+				// else, it closes it or reopens a new one
 
-				//fmt.Println("asd", string(parent.Value[0]))
 				parentPattern := u.Symbols[string(parent.Value[0])]
 
 				if slices.Contains(parentPattern.Pattern, fullSymbol) {
@@ -89,7 +88,7 @@ func ParseToAST(tokens []Token) *[]ASTNode {
 						Body:       &[]ASTNode{},
 					}
 					*parent.Body = append(*parent.Body, node)
-					return recursiveToken(parent, finalTree)
+					return recursiveToken(&node, finalTree)
 				}
 
 			}
@@ -105,6 +104,12 @@ func ParseToAST(tokens []Token) *[]ASTNode {
 	}
 
 	ASTree := recursiveToken(nil, []ASTNode{})
-	fmt.Println(ASTree)
+
+	for idx, val := range ASTree {
+		fmt.Println("NODE ", idx, ": ", val.Type)
+		fmt.Println("NODE ", idx, " BODY: ", val.Body)
+		fmt.Println()
+
+	}
 	return &ASTree
 }

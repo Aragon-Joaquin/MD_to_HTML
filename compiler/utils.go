@@ -1,6 +1,7 @@
 package compiler
 
 import (
+	"fmt"
 	u "md_to_html/utils"
 	"slices"
 	"strings"
@@ -82,13 +83,14 @@ func parentHasParent(node *ASTNode) *ASTNode {
 
 func toggleHtmlSymbols(cursor *int, DOMElement []string, closeElements bool) string {
 	var bodyBuilder strings.Builder
+
 	for _, val := range DOMElement {
 		if closeElements {
 			bodyBuilder.WriteString("</" + val + ">")
+			bodyBuilder.WriteString("\n")
 		} else {
 			bodyBuilder.WriteString("<" + val + ">")
 		}
-		bodyBuilder.WriteString("\n")
 		*cursor++
 	}
 	return bodyBuilder.String()
@@ -100,8 +102,29 @@ func closeHtmlComments(cursor *int, DOMElement string) string {
 	commentType := u.ClosesBy[DOMElement]
 
 	bodyBuilder.WriteString(commentType)
-	bodyBuilder.WriteString("\n")
 	*cursor++
 
 	return bodyBuilder.String()
+}
+
+func getNextVal(slice *[]ASTNode, cursor *int) *ASTNode {
+	if cursor == nil || *cursor+1 >= len(*slice) {
+		return nil
+	}
+
+	nextVal := (*slice)[*cursor+1]
+	fmt.Println("NEXT VAL:", nextVal)
+	return &nextVal
+}
+
+func identStrings(cursor *int, node *ASTNode, nextVal *ASTNode) string {
+	var output strings.Builder
+	output.WriteString(node.Value)
+
+	if nextVal == nil {
+		return output.String()
+	} else {
+		output.WriteString(" ")
+		return output.String()
+	}
 }
