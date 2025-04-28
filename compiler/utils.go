@@ -28,15 +28,6 @@ func isString(char string) bool {
 * ------------------------
  */
 
-func createEmptyNode(cuToken Token, parent *ASTNode) ASTNode {
-	return ASTNode{
-		ParentNode: parent,
-		Type:       cuToken.Type,
-		Value:      cuToken.Value,
-		Body:       &[]ASTNode{},
-	}
-}
-
 /*
 ! "why does this function even exists?"
 

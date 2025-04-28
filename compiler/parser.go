@@ -1,8 +1,8 @@
 package compiler
 
 import (
+	"fmt"
 	u "md_to_html/utils"
-	"slices"
 )
 
 type ASTNode struct {
@@ -16,7 +16,6 @@ type ASTNode struct {
 func ParseToAST(tokens []Token) *[]ASTNode {
 	var cursor int = -1
 	var recursiveToken func(parent *ASTNode, finalTree []ASTNode) []ASTNode
-
 	recursiveToken = func(parent *ASTNode, finalTree []ASTNode) []ASTNode {
 		cursor++
 
@@ -25,83 +24,140 @@ func ParseToAST(tokens []Token) *[]ASTNode {
 		}
 		cuToken := tokens[cursor]
 
-		if cuToken.Type == "String" {
-			if parent != nil {
-				*parent.Body = append(*parent.Body, createEmptyNode(cuToken, parent))
-			} else {
-				finalTree = append(finalTree, createEmptyNode(cuToken, nil))
+		switch cuToken.Type {
+		case "String":
+			{
+				createString(parent, cuToken.Value, &finalTree)
+				return recursiveToken(parent, finalTree)
 			}
-			return recursiveToken(parent, finalTree)
-		}
+		case "Symbol":
+			{
+				getSymbol := u.Symbols[cuToken.Value]
 
-		if cuToken.Type == "Symbol" {
-			getSymbol := u.Symbols[cuToken.Value]
-			var fullSymbol string
-			alternatives := checkAllPosibilities(getSymbol.Pattern)
+				var patternMatch string
+				// var isBadSymbol bool
+				var counter int
+				for _, val := range getSymbol.Pattern {
+					counter = 0
+					// isBadSymbol = false
+					patternMatch = ""
 
-			// groups symbols like:
-			// #####, _, <!--, etc...
-			var counter int
-			for idx, val := range alternatives {
-				for range len(val) {
-					cuToken := tokens[cursor+counter]
-					counter++
+					for _, char := range val {
+						if counter+cursor < len(tokens) {
+							cuToken := tokens[counter+cursor]
+							counter++
 
-					if slices.Contains(val, string(cuToken.Value)) {
-						val = val[idx:]
-						fullSymbol += cuToken.Value
-					} else {
+							if cuToken.Value == string(char) {
+								patternMatch += cuToken.Value
+							} else {
+								break
+							}
+						} else {
+							break
+						}
+					}
+
+					// i have no idea how to check if the next symbol
+					// makes sense for the context or not just to be taken as string
+					if val == patternMatch || u.ClosesBy[patternMatch] != "" {
 						break
 					}
 				}
+				fmt.Println("PATTERN", patternMatch)
+				cursor += len(patternMatch) - 1
 
-				if slices.Contains(getSymbol.Pattern, fullSymbol) {
-					break
+				//check is its code
+				if parent != nil && (parent.Value == "```" && patternMatch != "```") {
+					createString(parent, patternMatch, &finalTree)
+					return recursiveToken(parent, finalTree)
 				}
 
-			}
-			cursor += len(fullSymbol) - 1
+				//check if its a bad symbol
+				// if isBadSymbol{
+				// 	createString(parent, patternMatch, &finalTree)
+				// 	return recursiveToken(parent, finalTree)
+				// }
 
-			//opens a body for the symbol node
-			if parent == nil {
-				node := ASTNode{
-					ParentNode: nil,
-					Type:       isCommentType(fullSymbol),
-					Value:      fullSymbol,
-					Body:       &[]ASTNode{},
-				}
-				finalTree = append(finalTree, node)
-				return recursiveToken(&node, finalTree)
-			} else {
-				// else, it closes it or reopens a new one
+				if parent != nil {
+					closesBy := u.ClosesBy[parent.Value]
 
-				parentPattern := u.Symbols[string(parent.Value[0])]
-
-				if slices.Contains(parentPattern.Pattern, fullSymbol) {
-					return recursiveToken(parentHasParent(parent), finalTree)
+					if patternMatch == parent.Value || closesBy == patternMatch {
+						return recursiveToken(parentHasParent(parent), finalTree)
+					} else {
+						node := ASTNode{
+							ParentNode: parent,
+							Type:       isCommentType(patternMatch),
+							Value:      patternMatch,
+							Body:       &[]ASTNode{},
+						}
+						*parent.Body = append(*parent.Body, node)
+						return recursiveToken(&node, finalTree)
+					}
 				} else {
 					node := ASTNode{
-						ParentNode: parent,
-						Type:       isCommentType(fullSymbol),
-						Value:      fullSymbol,
+						ParentNode: nil,
+						Type:       isCommentType(patternMatch),
+						Value:      patternMatch,
 						Body:       &[]ASTNode{},
 					}
-					*parent.Body = append(*parent.Body, node)
+					finalTree = append(finalTree, node)
 					return recursiveToken(&node, finalTree)
 				}
-
 			}
 
+		default:
+			{
+				// most likely a newLine
+				node := ASTNode{
+					ParentNode: nil,
+					Type:       cuToken.Type,
+					Value:      cuToken.Value,
+					Body:       &[]ASTNode{},
+				}
+
+				finalTree = append(finalTree, node)
+				return recursiveToken(nil, finalTree)
+			}
 		}
 
-		if cuToken.Type == "NewLine" {
-			finalTree = append(finalTree, createEmptyNode(cuToken, parent))
-			return recursiveToken(parentHasParent(parent), finalTree)
-		}
-
-		return finalTree
 	}
 
 	ASTree := recursiveToken(nil, []ASTNode{})
+
+	fmt.Println(ASTree)
 	return &ASTree
+}
+
+/*
+
+HANDLE:
+	String
+	Symbol
+	NewLine
+
+MAKE NEW TYPE:
+	Comment
+
+FUNCS AVAILABLE:
+	createEmptyNode
+	checkAllPosibilities
+	isCommentType
+	parentHasParent
+*/
+
+func createString(parent *ASTNode, Value string, finalTree *[]ASTNode) *ASTNode {
+	node := ASTNode{
+		ParentNode: parent,
+		Type:       "String",
+		Value:      Value,
+		Body:       &[]ASTNode{},
+	}
+
+	if parent != nil {
+		*parent.Body = append(*parent.Body, node)
+	} else {
+		*finalTree = append(*finalTree, node)
+	}
+
+	return &node
 }

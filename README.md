@@ -33,6 +33,7 @@ Por ahora, solo me ocupare de los elementos mas basicos de Markdown. Quizas en u
 | String         | Words, phrases, or plain text                                                 |
 | NewLine        | Only line feed values like `\n`, `\r` or `\r\n`. Whitespaces will be skipped. |
 | Comment        | Dont apply rules to the following blocks: `/* */` and `<!-- -->`              |
+| Code           | Special rules for the triple backtick (```).                                  |
 
 1. **_Parser_**
 

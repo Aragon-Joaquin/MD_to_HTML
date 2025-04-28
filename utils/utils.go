@@ -36,6 +36,7 @@ const (
 	Bold          = "b"
 	Math          = "math"
 	Highlight     = "mark"
+	KeyboardKey   = "kbd"
 	Code          = "code"
 	Deleted       = "del"
 	H1            = "h1"
