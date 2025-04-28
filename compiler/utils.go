@@ -1,7 +1,6 @@
 package compiler
 
 import (
-	"fmt"
 	u "md_to_html/utils"
 	"slices"
 	"strings"
@@ -113,7 +112,6 @@ func getNextVal(slice *[]ASTNode, cursor *int) *ASTNode {
 	}
 
 	nextVal := (*slice)[*cursor+1]
-	fmt.Println("NEXT VAL:", nextVal)
 	return &nextVal
 }
 

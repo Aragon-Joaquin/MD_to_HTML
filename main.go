@@ -3,9 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	c "md_to_html/compiler"
 	u "md_to_html/utils"
 	"os"
+	"path/filepath"
 )
 
 // * usage: go run . --path "./your/path"
@@ -25,6 +27,11 @@ func main() {
 		fmt.Fprintln(os.Stdout, u.Yellow+"Using fallback file 'example.md'..."+u.Reset)
 		pathString = "./test/example.md"
 	} else {
+		fileExtension := filepath.Ext(*cmd)
+		if fileExtension != ".md" && fileExtension != ".MD" {
+			log.Fatalln("The file provided is not markdown: ", string(*cmd))
+		}
+
 		pathString = string(*cmd)
 	}
 

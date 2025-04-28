@@ -30,7 +30,6 @@ func TransformToHTMLCode(ASTree *[]ASTNode) *string {
 
 // ! core
 func traverserNodeBody(output *strings.Builder, cursor *int, currentNode *ASTNode, ASTree *[]ASTNode) {
-	// fmt.Println("CURRENT NODE: ", currentNode)
 	if currentNode.Type == "Symbol" {
 		DOMElement := u.HTMLEquivalents[currentNode.Value]
 		output.WriteString(toggleHtmlSymbols(cursor, DOMElement, false))
