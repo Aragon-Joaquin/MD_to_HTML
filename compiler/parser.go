@@ -24,6 +24,22 @@ func ParseToAST(tokens []Token) *[]ASTNode {
 		}
 		cuToken := tokens[cursor]
 
+		// check if code
+		if parent != nil && parent.Type == "Code" {
+			if cursor+3 < len(tokens) {
+				isBackticks := checkIfCode(tokens[cursor : cursor+3])
+				fmt.Println("tokens: ", tokens[cursor:cursor+3])
+				fmt.Println("")
+				if isBackticks {
+					cursor += 3
+					return recursiveToken(parentHasParent(parent), finalTree)
+				}
+
+				createString(parent, cuToken.Value, &finalTree)
+				return recursiveToken(parent, finalTree)
+			}
+
+		}
 		switch cuToken.Type {
 		case "String":
 			{
@@ -66,12 +82,6 @@ func ParseToAST(tokens []Token) *[]ASTNode {
 				fmt.Println("PATTERN", patternMatch)
 				cursor += len(patternMatch) - 1
 
-				//check is its code
-				if parent != nil && (parent.Value == "```" && patternMatch != "```") {
-					createString(parent, patternMatch, &finalTree)
-					return recursiveToken(parent, finalTree)
-				}
-
 				//check if its a bad symbol
 				// if isBadSymbol{
 				// 	createString(parent, patternMatch, &finalTree)
@@ -86,7 +96,7 @@ func ParseToAST(tokens []Token) *[]ASTNode {
 					} else {
 						node := ASTNode{
 							ParentNode: parent,
-							Type:       isCommentType(patternMatch),
+							Type:       returnSymbolType(patternMatch),
 							Value:      patternMatch,
 							Body:       &[]ASTNode{},
 						}
@@ -96,7 +106,7 @@ func ParseToAST(tokens []Token) *[]ASTNode {
 				} else {
 					node := ASTNode{
 						ParentNode: nil,
-						Type:       isCommentType(patternMatch),
+						Type:       returnSymbolType(patternMatch),
 						Value:      patternMatch,
 						Body:       &[]ASTNode{},
 					}
@@ -160,4 +170,17 @@ func createString(parent *ASTNode, Value string, finalTree *[]ASTNode) *ASTNode 
 	}
 
 	return &node
+}
+
+func checkIfCode(nodes []Token) bool {
+	var isBackticks bool = true
+
+	for _, val := range nodes {
+		if val.Value != "`" {
+			isBackticks = false
+			break
+		}
+	}
+
+	return isBackticks
 }

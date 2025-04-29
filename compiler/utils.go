@@ -28,27 +28,15 @@ func isString(char string) bool {
 * ------------------------
  */
 
-/*
-! "why does this function even exists?"
-
-Some characters like "<" have a pattern which contains multiples characters.
-And some have more than one pattern.
-*/
-func checkAllPosibilities(pattern []string) [][]string {
-	var alternatives [][]string
-
-	for idx := range pattern {
-		test := strings.Split(pattern[idx], "")
-		alternatives = append(alternatives, test)
-	}
-
-	return alternatives
-}
-
-func isCommentType(pattern string) string {
+func returnSymbolType(pattern string) string {
 	if u.CommentCombined[pattern] > 0 {
 		return "Comment"
 	}
+
+	if pattern == "```" {
+		return "Code"
+	}
+
 	return "Symbol"
 }
 

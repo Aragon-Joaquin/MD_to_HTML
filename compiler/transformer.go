@@ -1,6 +1,7 @@
 package compiler
 
 import (
+	"fmt"
 	u "md_to_html/utils"
 	"strings"
 )
@@ -11,11 +12,31 @@ func TransformToHTMLCode(ASTree *[]ASTNode) *string {
 
 	for cursor < len(*ASTree) {
 		node := (*ASTree)[cursor]
+		fmt.Println(node)
 
 		if node.Type == "Symbol" || node.Type == "Comment" {
 			var output strings.Builder
 			traverserNodeBody(&output, &cursor, &node, ASTree)
 			bodyBuilder.WriteString(output.String())
+		} else if node.Type == "Code" {
+			element := u.HTMLEquivalents[node.Value][0]
+			var langAttr string = "bash"
+
+			if len(*node.Body) >= 2 {
+				lang := (*node.Body)[0]
+				if lang.Value != "\n" && (*node.Body)[1].Value == "\n" {
+					langAttr = lang.Value
+					cursor++
+					*node.Body = (*node.Body)[1:]
+				}
+			}
+			bodyBuilder.WriteString("<" + element + " lang='" + langAttr + "'>")
+			for _, val := range *node.Body {
+
+				bodyBuilder.WriteString(val.Value + " ")
+			}
+			bodyBuilder.WriteString("</" + element + ">")
+			cursor += len(*node.Body) + 1
 		} else {
 			nextVal := getNextVal(ASTree, &cursor)
 			resString := identStrings(&cursor, &node, nextVal)
