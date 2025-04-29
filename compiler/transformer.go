@@ -1,7 +1,6 @@
 package compiler
 
 import (
-	"fmt"
 	u "md_to_html/utils"
 	"strings"
 )
@@ -12,7 +11,6 @@ func TransformToHTMLCode(ASTree *[]ASTNode) *string {
 
 	for cursor < len(*ASTree) {
 		node := (*ASTree)[cursor]
-		fmt.Println(node)
 
 		if node.Type == "Symbol" || node.Type == "Comment" {
 			var output strings.Builder
@@ -53,6 +51,13 @@ func TransformToHTMLCode(ASTree *[]ASTNode) *string {
 func traverserNodeBody(output *strings.Builder, cursor *int, currentNode *ASTNode, ASTree *[]ASTNode) {
 	if currentNode.Type == "Symbol" {
 		DOMElement := u.HTMLEquivalents[currentNode.Value]
+
+		if len(DOMElement) == 0 {
+			output.WriteString(currentNode.Value)
+			*cursor++
+			return
+		}
+
 		output.WriteString(toggleHtmlSymbols(cursor, DOMElement, false))
 	} else {
 		// else, its a Comment

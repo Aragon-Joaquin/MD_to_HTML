@@ -53,6 +53,36 @@ func parentHasParent(node *ASTNode) *ASTNode {
 	return node.ParentNode.ParentNode
 }
 
+func createString(parent *ASTNode, Value string, finalTree *[]ASTNode) *ASTNode {
+	node := ASTNode{
+		ParentNode: parent,
+		Type:       "String",
+		Value:      Value,
+		Body:       &[]ASTNode{},
+	}
+
+	if parent != nil {
+		*parent.Body = append(*parent.Body, node)
+	} else {
+		*finalTree = append(*finalTree, node)
+	}
+
+	return &node
+}
+
+func checkIfCode(nodes []Token) bool {
+	var isBackticks bool = true
+
+	for _, val := range nodes {
+		if val.Value != "`" {
+			isBackticks = false
+			break
+		}
+	}
+
+	return isBackticks
+}
+
 /*
 * ------------------------
 * 	TRANSFORMER FUNCTIONS

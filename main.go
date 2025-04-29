@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -16,10 +17,10 @@ func main() {
 	flag.Parse()
 
 	//! validate/verification steps
-	// if _, err := os.Stat(c.FilePath); !errors.Is(err, os.ErrNotExist) {
-	// 	log.Fatalln("file already exists, delete it or move it to another directory")
-	// 	return
-	// }
+	if _, err := os.Stat(c.FilePath); !errors.Is(err, os.ErrNotExist) {
+		log.Fatalln("file already exists, delete it or move it to another directory")
+		return
+	}
 
 	var pathString string
 	if string(*cmd) == "" {

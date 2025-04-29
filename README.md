@@ -1,4 +1,5 @@
-Updating when i have an idea how to make a decent start with this
+> [!NOTE]  
+> More than a week in this. It handles basic syntax at least... But i got bored of rewriting this lmao
 
 My main idea was to implement some type of Abstract Syntax Tree to keep track of Symbols like \*, \_, $, = and ```.
 
