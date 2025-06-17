@@ -6,26 +6,29 @@ import (
 )
 
 type Token struct {
-	Type  string
+	Type  TOKEN_TYPE
 	Value string
 }
 
 func TokenaizeAllLines(fileBytes []byte) *[]Token {
-
 	var sliceOfTokens []Token
 	var cursor int = 0
 
 	for cursor < len(fileBytes) {
 		char := string(fileBytes[cursor])
 
-		if char == " " {
+		if CheckForTypeSpace(char) {
+			sliceOfTokens = append(sliceOfTokens, Token{
+				Type:  TYPE_SPACE,
+				Value: char,
+			})
 			cursor++
 			continue
 		}
 
 		if slices.Contains(u.TypeOfSymbols, char) {
 			sliceOfTokens = append(sliceOfTokens, Token{
-				Type:  "Symbol",
+				Type:  TYPE_SYMBOL,
 				Value: char,
 			})
 			cursor++
@@ -37,7 +40,7 @@ func TokenaizeAllLines(fileBytes []byte) *[]Token {
 
 		if slices.Contains(lineSeparators, char) {
 			sliceOfTokens = append(sliceOfTokens, Token{
-				Type:  "NewLine",
+				Type:  TYPE_NEWLINE,
 				Value: "\n",
 			})
 			cursor++
@@ -54,7 +57,7 @@ func TokenaizeAllLines(fileBytes []byte) *[]Token {
 				continue
 			} else {
 				sliceOfTokens = append(sliceOfTokens, Token{
-					Type:  "String",
+					Type:  TYPE_STRING,
 					Value: word,
 				})
 			}

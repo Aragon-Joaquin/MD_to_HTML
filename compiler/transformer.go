@@ -1,6 +1,7 @@
 package compiler
 
 import (
+	"fmt"
 	u "md_to_html/utils"
 	"strings"
 )
@@ -12,11 +13,16 @@ func TransformToHTMLCode(ASTree *[]ASTNode) *string {
 	for cursor < len(*ASTree) {
 		node := (*ASTree)[cursor]
 
-		if node.Type == "Symbol" || node.Type == "Comment" {
+		//symbol or comment
+		if node.Type == TYPE_SYMBOL || node.Type == TYPE_COMMENT {
 			var output strings.Builder
-			traverserNodeBody(&output, &cursor, &node, ASTree)
+			traverserNodeBody(&output, &cursor, &node)
 			bodyBuilder.WriteString(output.String())
-		} else if node.Type == "Code" {
+			continue
+		}
+
+		// code - this doesnt evaluates
+		if node.Type == TYPE_CODE {
 			element := u.HTMLEquivalents[node.Value][0]
 			var langAttr string = "bash"
 
@@ -30,17 +36,17 @@ func TransformToHTMLCode(ASTree *[]ASTNode) *string {
 			}
 			bodyBuilder.WriteString("<" + element + " lang='" + langAttr + "'>")
 			for _, val := range *node.Body {
-
-				bodyBuilder.WriteString(val.Value + " ")
+				bodyBuilder.WriteString(val.Value)
 			}
 			bodyBuilder.WriteString("</" + element + ">")
 			cursor += len(*node.Body) + 1
-		} else {
-			nextVal := getNextVal(ASTree, &cursor)
-			resString := identStrings(&cursor, &node, nextVal)
-			bodyBuilder.WriteString(resString)
-			cursor++
+
+			continue
 		}
+		// string, space, newline,
+		bodyBuilder.WriteString(node.Value)
+		cursor++
+
 	}
 
 	result := bodyBuilder.String()
@@ -48,11 +54,16 @@ func TransformToHTMLCode(ASTree *[]ASTNode) *string {
 }
 
 // ! core
-func traverserNodeBody(output *strings.Builder, cursor *int, currentNode *ASTNode, ASTree *[]ASTNode) {
-	if currentNode.Type == "Symbol" {
-		DOMElement := u.HTMLEquivalents[currentNode.Value]
+func traverserNodeBody(output *strings.Builder, cursor *int, currentNode *ASTNode) {
+	fmt.Println("counter: ", *cursor, currentNode.Value)
 
-		if len(DOMElement) == 0 {
+	for _, val := range *currentNode.Body {
+		fmt.Println("holy: ", val)
+	}
+
+	if currentNode.Type == TYPE_SYMBOL {
+		DOMElement, ok := u.HTMLEquivalents[currentNode.Value]
+		if !ok {
 			output.WriteString(currentNode.Value)
 			*cursor++
 			return
@@ -65,25 +76,21 @@ func traverserNodeBody(output *strings.Builder, cursor *int, currentNode *ASTNod
 		*cursor++
 	}
 
-	for idx, val := range *currentNode.Body {
+	for _, val := range *currentNode.Body {
 		if len(*val.Body) > 0 {
-			traverserNodeBody(output, cursor, &val, ASTree)
-
+			traverserNodeBody(output, cursor, &val)
 		} else {
 			// its just a string or empty character
-			if val.Type != "Comment" {
-				nextVal := getNextVal(currentNode.Body, &idx)
-				res := identStrings(cursor, &val, nextVal)
-				output.WriteString(res)
+			if val.Type != TYPE_COMMENT {
+				output.WriteString(val.Value)
 			}
 		}
 	}
 
-	if currentNode.Type == "Symbol" {
+	if currentNode.Type == TYPE_SYMBOL {
 		DOMElement := u.HTMLEquivalents[currentNode.Value]
 		output.WriteString(toggleHtmlSymbols(cursor, DOMElement, true))
 	} else {
 		output.WriteString(closeHtmlComments(cursor, currentNode.Value))
-
 	}
 }

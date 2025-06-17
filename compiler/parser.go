@@ -1,12 +1,13 @@
 package compiler
 
 import (
+	"fmt"
 	u "md_to_html/utils"
 )
 
 type ASTNode struct {
 	ParentNode *ASTNode
-	Type       string
+	Type       TOKEN_TYPE
 	Value      string
 	Body       *[]ASTNode
 }
@@ -15,6 +16,7 @@ type ASTNode struct {
 func ParseToAST(tokens []Token) *[]ASTNode {
 	var cursor int = -1
 	var recursiveToken func(parent *ASTNode, finalTree []ASTNode) []ASTNode
+
 	recursiveToken = func(parent *ASTNode, finalTree []ASTNode) []ASTNode {
 		cursor++
 
@@ -24,8 +26,9 @@ func ParseToAST(tokens []Token) *[]ASTNode {
 		cuToken := tokens[cursor]
 
 		// check if code
-		if parent != nil && parent.Type == "Code" {
+		if parent != nil && parent.Type == TYPE_CODE {
 			if cursor+3 < len(tokens) {
+				fmt.Println(tokens[cursor : cursor+3])
 				isBackticks := checkIfCode(tokens[cursor : cursor+3])
 				if isBackticks {
 					cursor += 3
@@ -38,21 +41,19 @@ func ParseToAST(tokens []Token) *[]ASTNode {
 
 		}
 		switch cuToken.Type {
-		case "String":
+		case TYPE_STRING:
 			{
 				createString(parent, cuToken.Value, &finalTree)
 				return recursiveToken(parent, finalTree)
 			}
-		case "Symbol":
+		case TYPE_SYMBOL:
 			{
 				getSymbol := u.Symbols[cuToken.Value]
 
 				var patternMatch string
-				// var isBadSymbol bool
 				var counter int
 				for _, val := range getSymbol.Pattern {
 					counter = 0
-					// isBadSymbol = false
 					patternMatch = ""
 
 					for _, char := range val {
@@ -69,9 +70,6 @@ func ParseToAST(tokens []Token) *[]ASTNode {
 							break
 						}
 					}
-
-					// i have no idea how to check if the next symbol
-					// makes sense for the context or not just to be taken as string
 					if val == patternMatch || u.ClosesBy[patternMatch] != "" {
 						break
 					}
@@ -80,13 +78,10 @@ func ParseToAST(tokens []Token) *[]ASTNode {
 				if patternMatch == "" {
 					return recursiveToken(parent, finalTree)
 				}
+
 				cursor += len(patternMatch) - 1
 
-				//check if its a bad symbol
-				// if isBadSymbol{
-				// 	createString(parent, patternMatch, &finalTree)
-				// 	return recursiveToken(parent, finalTree)
-				// }
+				fmt.Println("MATCHING: ", patternMatch)
 
 				if parent != nil {
 					closesBy := u.ClosesBy[parent.Value]
@@ -113,6 +108,23 @@ func ParseToAST(tokens []Token) *[]ASTNode {
 					finalTree = append(finalTree, node)
 					return recursiveToken(&node, finalTree)
 				}
+			}
+
+		case TYPE_SPACE:
+			{
+				node := ASTNode{
+					ParentNode: parent,
+					Type:       cuToken.Type,
+					Value:      cuToken.Value,
+					Body:       &[]ASTNode{},
+				}
+
+				if parent != nil {
+					*parent.Body = append(*parent.Body, node)
+				} else {
+					finalTree = append(finalTree, node)
+				}
+				return recursiveToken(parent, finalTree)
 			}
 
 		default:

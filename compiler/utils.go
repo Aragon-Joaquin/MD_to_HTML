@@ -4,6 +4,7 @@ import (
 	u "md_to_html/utils"
 	"slices"
 	"strings"
+	"unicode/utf8"
 )
 
 var lineSeparators = []string{"\r", "\n"}
@@ -22,22 +23,33 @@ func isString(char string) bool {
 	return true
 }
 
+// TRUE == is space or tabulation
+//
+// FALSE == is NewLine, Symbol, etc...
+func CheckForTypeSpace(char string) bool {
+	//! U+0009 is tabs &  U+0020 is space
+	if r, _ := utf8.DecodeRuneInString(char); r == '\t' || r == ' ' {
+		return true
+	}
+	return false
+}
+
 /*
 * ------------------------
 * 	PARSER FUNCTIONS
 * ------------------------
  */
 
-func returnSymbolType(pattern string) string {
+func returnSymbolType(pattern string) TOKEN_TYPE {
 	if u.CommentCombined[pattern] > 0 {
-		return "Comment"
+		return TYPE_COMMENT
 	}
 
 	if pattern == "```" {
-		return "Code"
+		return TYPE_CODE
 	}
 
-	return "Symbol"
+	return TYPE_SYMBOL
 }
 
 func parentHasParent(node *ASTNode) *ASTNode {
@@ -56,7 +68,7 @@ func parentHasParent(node *ASTNode) *ASTNode {
 func createString(parent *ASTNode, Value string, finalTree *[]ASTNode) *ASTNode {
 	node := ASTNode{
 		ParentNode: parent,
-		Type:       "String",
+		Type:       TYPE_STRING,
 		Value:      Value,
 		Body:       &[]ASTNode{},
 	}
@@ -113,25 +125,4 @@ func closeHtmlComments(cursor *int, DOMElement string) string {
 	*cursor++
 
 	return bodyBuilder.String()
-}
-
-func getNextVal(slice *[]ASTNode, cursor *int) *ASTNode {
-	if cursor == nil || *cursor+1 >= len(*slice) {
-		return nil
-	}
-
-	nextVal := (*slice)[*cursor+1]
-	return &nextVal
-}
-
-func identStrings(cursor *int, node *ASTNode, nextVal *ASTNode) string {
-	var output strings.Builder
-	output.WriteString(node.Value)
-
-	if nextVal == nil {
-		return output.String()
-	} else {
-		output.WriteString(" ")
-		return output.String()
-	}
 }
