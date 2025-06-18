@@ -1,5 +1,37 @@
-> [!NOTE]  
-> More than a week in this. It handles basic syntax at least... But i got bored of rewriting this lmao
+> [!WARNING]  
+> Any bug you encounter please make an issue or a pr :)
+
+# Hyper Text Markup Language (.html) to MarkDown (.md)
+
+Supports basic markdown syntax like:
+
+```xml
+<!-- Headings -->
+# a 		➜ 	<h1>a</h1>
+## b 		➜	<h2>b</h2>
+### c		➜	<h3>c</h3>
+#### d		➜	<h4>d</h4>
+##### e		➜	<h5>e</h5>
+###### f	➜	<h6>f</h6>
+
+<!-- Text decoration -->
+*1° italic* ➜	<i>1° italic</i>
+_2° italic_ ➜	<i>2° italic</i>
+
+**1° bold** ➜	<b>1° bold</b>
+__2° bold__ ➜	<b>2° bold</b>
+
+<!-- Combined -->
+***Combined*** ➜ <b><i>Combined</i></b>
+___Combined___ ➜ <b><i>Combined</i></b>
+
+<!-- Blockquote -->
+> quote ➜ <blockquote>quote</blockquote>
+```
+
+and more!
+
+## Explaining the idea below:
 
 My main idea was to implement some type of Abstract Syntax Tree to keep track of Symbols like \*, \_, $, = and ```.
 

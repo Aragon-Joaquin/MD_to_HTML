@@ -46,18 +46,6 @@ func main() {
 	//! compiler steps - most important part of the program
 	tokens := c.TokenaizeAllLines(*dataInfo)
 	ASTree := c.ParseToAST(*tokens)
-
-	// my debug tool :clueless:
-	// for _, val := range *ASTree {
-	// 	if len(*val.Body) > 0 {
-	// 		fmt.Fprintln(os.Stdout, u.Green+val.Value+" :", val.Type+u.Reset)
-	// 		for _, lol := range *val.Body {
-	// 			fmt.Println(string(lol.Type) + " " + lol.Value)
-	// 		}
-	// 		fmt.Println("")
-	// 	}
-	// }
-
 	HTMLElements := c.TransformToHTMLCode(ASTree)
 
 	//! output the file

@@ -1,7 +1,6 @@
 package compiler
 
 import (
-	"fmt"
 	u "md_to_html/utils"
 )
 
@@ -28,7 +27,6 @@ func ParseToAST(tokens []Token) *[]ASTNode {
 		// check if code
 		if parent != nil && parent.Type == TYPE_CODE {
 			if cursor+3 < len(tokens) {
-				fmt.Println(tokens[cursor : cursor+3])
 				isBackticks := checkIfCode(tokens[cursor : cursor+3])
 				if isBackticks {
 					cursor += 3
@@ -48,7 +46,11 @@ func ParseToAST(tokens []Token) *[]ASTNode {
 			}
 		case TYPE_SYMBOL:
 			{
-				getSymbol := u.Symbols[cuToken.Value]
+				getSymbol, ok := u.Symbols[cuToken.Value]
+
+				if !ok {
+					return recursiveToken(parent, finalTree)
+				}
 
 				var patternMatch string
 				var counter int
@@ -70,18 +72,13 @@ func ParseToAST(tokens []Token) *[]ASTNode {
 							break
 						}
 					}
+
 					if val == patternMatch || u.ClosesBy[patternMatch] != "" {
 						break
 					}
 				}
 
-				if patternMatch == "" {
-					return recursiveToken(parent, finalTree)
-				}
-
 				cursor += len(patternMatch) - 1
-
-				fmt.Println("MATCHING: ", patternMatch)
 
 				if parent != nil {
 					closesBy := u.ClosesBy[parent.Value]

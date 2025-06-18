@@ -1,7 +1,6 @@
 package compiler
 
 import (
-	"fmt"
 	u "md_to_html/utils"
 	"strings"
 )
@@ -21,7 +20,7 @@ func TransformToHTMLCode(ASTree *[]ASTNode) *string {
 			continue
 		}
 
-		// code - this doesnt evaluates
+		// code
 		if node.Type == TYPE_CODE {
 			element := u.HTMLEquivalents[node.Value][0]
 			var langAttr string = "bash"
@@ -43,7 +42,8 @@ func TransformToHTMLCode(ASTree *[]ASTNode) *string {
 
 			continue
 		}
-		// string, space, newline,
+
+		// string, space, newline
 		bodyBuilder.WriteString(node.Value)
 		cursor++
 
@@ -55,12 +55,6 @@ func TransformToHTMLCode(ASTree *[]ASTNode) *string {
 
 // ! core
 func traverserNodeBody(output *strings.Builder, cursor *int, currentNode *ASTNode) {
-	fmt.Println("counter: ", *cursor, currentNode.Value)
-
-	for _, val := range *currentNode.Body {
-		fmt.Println("holy: ", val)
-	}
-
 	if currentNode.Type == TYPE_SYMBOL {
 		DOMElement, ok := u.HTMLEquivalents[currentNode.Value]
 		if !ok {
